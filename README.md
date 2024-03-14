@@ -14,7 +14,7 @@ For smooth developement processes, you must configure your development to match 
 
 ## Installation
 1. Clone the repository:
-git clone https://github.com/your-username/your-repository.git
+git clone https://github.com/woody05/interview_site.git
 
 2. Navigate to the project directory:
 cd interview_site
