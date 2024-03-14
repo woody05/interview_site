@@ -1,0 +1,526 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ block.super }} - {{ title }}
+{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        .modal-xl .modal-body {
+            max-height: 65vh;
+            overflow-y: scroll;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="">
+        <h1>{{ title }}</h1>
+    </div>
+    <div class="mb-3">
+        <button id="open-add-form" class="btn btn-primary">ADD LISTING</button>
+    </div>
+
+    <div class="search-filters d-flex mx-auto">
+        <div class="search-filter-item form-group ml-1">
+            <input type="search" id="keyword-search" class="keyword-search form-control" name="keyword-search" placeholder="Job title, keyword, or company"/>
+        </div>
+        <div class="search-filter-item form-group ml-1">
+            <input type="search" id="location-search" class="location-search form-control" name="location-search" placeholder="City, state, zip, or remote" />
+        </div>
+        <div class="search-filter-item form-group pl-1">
+            <button id="search-submit" class="btn btn-primary search-submit">SEARCH</button>
+        </div>
+    </div> 
+    
+    <div class="job-listings my-3"></div>
+
+    <!-- Job Listing Modal -->
+    <!-- In Flask I would macro this out into another file. Unable to find equivilant in Django in time constraint -->
+    <div class="modal fade" id="JobListingModal" tabindex="-1" role="dialog" aria-labelledby="JobListingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title" id="JobListingModalLabel"></h2>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <form id="job-listing-form" method="post" data-action="create" data-url="/job-listing/create">
+                    {% csrf_token %}
+                    {{ JobListingForm.as_p }}
+                </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">CLOSE</button>
+              <!-- Add more buttons here if needed -->
+              <button id="submit-job-listing" class="btn btn-primary" type="submit">SUBMIT</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Job Listing Modal -->
+
+    <!-- Job application Modal -->
+    <!-- In Flask I would macro this out into another file. Unable to find equivilant in Django in time constraint -->
+    <div class="modal fade" id="JobApplicationModal" tabindex="-1" role="dialog" aria-labelledby="JobApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title" id="JobApplicationModalLabel">Application: </h2>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <form id="job-application-form">
+                    {% csrf_token %}
+                    {{ JobApplicationForm.as_p }}
+                </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">CLOSE</button>
+              <!-- Add more buttons here if needed -->
+              <button id="submit-job-application" class="btn btn-primary" type="submit">SUBMIT</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Job application Modal -->
+
+    <!-- Job Listing Details Modal -->
+    <!-- In Flask I would macro this out into another file. Unable to find equivilant in Django in time constraint -->
+    <div class="modal fade" id="JobListingDetailsModal" tabindex="-1" role="dialog" aria-labelledby="JobListingDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title" id="JobListingDetailsModalLabel">Details</h2>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body p-5">
+                <div class="">
+                    <h2 class="job-listing-title"></h2>
+                </div>
+                <div class="">
+                    <h3 class="job-listing-company"></h3>
+                </div>
+                <div class="">
+                    <p class="job-listing-location"></p>
+                </div>
+                <div class="">
+                    <p class="job-listing-deadline"></p>
+                </div>
+                <div class="mt-5">
+                    <h4>Full Job Description</h4>
+                    <p class="job-listing-description"></p>
+                </div>
+                <div class="">
+                    <button id="apply-open" class="btn btn-primary">APPLY</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">CLOSE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Job Listing Details Modal -->
+
+      <!-- Delete modal -->
+      <!-- In Flask I would macro this out into another file. Unable to find equivilant in Django in time constraint -->
+      <div class="modal fade" id="deleteJobListingModal" tabindex="-1" role="dialog" aria-labelledby="deleteJobListingModalLabel" aria-hidden="true" data-id="">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title" id="deleteJobListingModalLabel"></h2>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">CLOSE</button>
+              <!-- Add more buttons here if needed -->
+              <button id="delete-job-listing" class="btn btn-danger" type="submit">DELETE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Delete modal -->
+
+      <!-- Message modal -->
+      <!-- In Flask I would macro this out into another file. Unable to find equivilant in Django in time constraint -->
+      <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="dmessageModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title" id="messageModal"></h2>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">CLOSE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End message modal -->
+
+
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script src="/static/js/job_listings.js"></script>
+
+  <script>
+    const CSRF_TOKEN = '{{ csrf_token }}';
+
+
+    // Set up CSRF token for AJAX requests
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
+            }
+        }
+    });
+
+    $(function(){
+        get_recent_job_listings('.job-listings', '');
+    });
+    
+    $('#submit-job-listing').on('click', function(){
+        $('#job-listing-form').submit();
+    });
+
+    $('#submit-job-application').on('click', function(){
+        $('#job-application-form').submit();
+    });
+
+    $('#open-add-form').on('click', function(){
+        let modal =$('#JobListingModal');
+        modal.find('.modal-title').html('New Job Listing');
+        modal.find('#job-listing-form').data('url', `job-listing/create`);
+
+        // reset the form
+        modal.find('#job-listing-form')[0].reset();
+        // clear any existing error messages
+        modal.find('.form-error').remove();
+
+        modal.modal('show');
+    });
+
+    $('#job-listing-form').on('submit', function(e){
+        e.preventDefault();
+
+        let modal =$('#JobListingModal');
+        let jsonData = JSON.stringify(form_to_json(this));
+        let url = modal.find('#job-listing-form').data('url');
+
+        $.ajax({
+            url: url, 
+            type: 'POST',
+            async: true,
+            data: jsonData,
+            success: function(response) {
+                // Handle successful response
+                console.log('POST request successful:', response);
+
+                get_recent_job_listings('.job-listings', '');
+
+                // reset the form
+                modal.find('#job-listing-form')[0].reset(); 
+                modal.modal('hide');
+                do_message(response.success, 'Success');
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error('Error sending POST request:', xhr.responseJSON.error);
+
+                handle_form_error(modal.find('#job-listing-form'), xhr.responseJSON.error);
+            }
+        });
+    });
+
+    $('#job-application-form').on('submit', function(e){
+        e.preventDefault();
+
+        let modal =$('#JobApplicationModal');
+        let jsonData = JSON.stringify(form_to_json(this));
+
+        console.log(jsonData)
+
+        $.ajax({
+            url: '/job-listing-apply', 
+            type: 'POST',
+            async: true,
+            data: jsonData,
+            success: function(response) {
+                // Handle successful response
+                console.log('POST request successful:', response);
+
+                // reset the form
+                modal.find('#job-application-form')[0].reset(); 
+                modal.modal('hide');
+                do_message(response.success, 'Success');
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.log('what the fuck!!')
+                console.error('Error sending POST request:', xhr.responseJSON.error);
+
+                handle_form_error(modal.find('#job-application-form'), xhr.responseJSON.error);
+            }
+        });
+    });
+
+    function get_recent_job_listings(selector, url){
+        let container = $(selector).empty();
+
+        jsonData = {};
+
+        $.ajax({
+            url: 'recent-jobs-list', // Replace with your server endpoint
+            type: 'GET',
+            async: true,
+            data: jsonData,
+            success: function(response) {
+                // Handle successful response
+
+                build_job_listing(container, response);
+
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error('Error sending POST request:', error);
+            }
+        });
+    }
+
+    function get_job_listing_form_data(selector, id) {
+        $.ajax({
+            url: `job-listing/${id}/edit/`,
+            type: 'GET',
+            async: true,
+            data: jsonData,
+            success: function(response) {
+                // Handle successful response
+                console.log('GET request successful:', response);
+                let formModal = $(selector);
+                formModal.find('#job-listing-form').data('url', `job-listing/${id}/edit/`)
+
+                Object.entries(response).forEach(([key, value]) => {
+                    console.log(key + ': ' + value);
+                    let field = formModal.find(`[name="${key}"]`).val(value);
+                });
+
+                formModal.modal('show');
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error('Error sending POST request:', error);
+            }
+        });
+    }
+
+    $('#delete-job-listing').on('click', function(){
+        let modal = $('#deleteJobListingModal');
+        let id = modal.data('id');
+
+        $.ajax({
+            url: `job-listing/${id}/delete/`, // Replace with your server endpoint
+            type: 'DELETE',
+            async: true,
+            data: jsonData,
+            success: function(response) {
+                // Handle successful response
+                console.log('DELETE request successful:', response.title);
+
+                get_recent_job_listings('.job-listings', '');
+
+                modal.modal('hide');
+                do_message(`Successfully deleted: ${response.title}`, 'Success');
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error('Error sending POST request:', error);
+                do_message(error.message, 'Error');
+            }
+        });
+    });
+
+    function do_message(message, title){
+        let messageModal = $('#messageModal');
+
+        messageModal.find('.modal-title').html(title);
+        messageModal.find('.modal-body').html(message);
+
+        messageModal.modal('show');
+    }
+
+    $('#search-submit').on('click', function(){
+        let container = $('.job-listings').empty();
+        let q = $(this).parent().parent().find('#keyword-search').val();
+        let location = $(this).parent().parent().find('#location-search').val();
+
+        $.ajax({
+            url: `/jobs-list`,
+            type: 'GET',
+            async: true,
+            data: {
+                q: q,
+                location: location
+            },
+            success: function(response) {
+                // Handle successful response
+                console.log('GET request successful:', response);
+                build_job_listing(container, response);
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error('Error sending POST request:', error);
+            }
+        });
+    });
+
+    function build_job_listing(selector, response){
+                let container = $(selector);
+                let data = response.data;
+                let description = response.description;
+
+                let results_description = $('<div />', {
+                    class: '',
+                    html: description
+                }).appendTo(container);
+                
+                let results_row = $('<div />', {
+                    class: 'row'
+                }).appendTo(container);
+
+                $.each(data, function(index, job) {
+                    
+                    let col = $('<div />', {
+                        class:'col-6'
+                    }).appendTo(results_row);
+
+                    col.append(`<div class="card my-3">
+                                    <div class="card-body">
+                                        <div class="header style="position: position: relative;">
+                                            <a href="#" class="job-listing-title-link"><h3>${job.job_title}</h3></a>
+                                            <div class="dropdown" style="position: absolute; top: 0.5rem; right: 0.5rem;">
+                                                <button class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item job-listing-edit" href="#">Edit</a>
+                                                    <a class="dropdown-item job-listing-delete" href="#">Delete</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <h5 class="card-title">${job.company_name}</h5>
+                                        <p>${job.location}</p>
+                                        <p>Apply by: ${job.application_deadline}</p>
+                                    </div>
+                                </div>`).appendTo(col);
+
+                    col.find('.job-listing-edit').on('click', function(){
+                        let formModal = $('#JobListingModal');
+                        formModal.find('.modal-title').html(`Edit Job Listing: ${job.job_title}`);
+                        
+                        // clear any existing error messages
+                        formModal.find('.form-error').remove();
+
+                        get_job_listing_form_data(formModal, job.id);
+                    });
+
+                    col.find('.job-listing-delete').on('click', function(){
+                        let modal = $('#deleteJobListingModal');
+                        modal.data('id', job.id)
+                        modal.find('.modal-title').html(`Delete`);
+                        modal.find('.modal-body').html(`Are you sure you want to delete ${job.job_title}`);
+
+                        modal.modal('show');
+                    });
+
+                    col.find('.job-listing-title-link').on('click', function(e){
+                        e.preventDefault();
+                        
+                        get_job_listing_details('#JobListingDetailsModal', job.id);
+                    });
+
+                });
+    }  
+    
+    function get_job_listing_details(selector, pk) {
+        let modal = $(selector);
+        let apply_button = modal.find('#apply-open');
+        apply_button.data('pk', pk);
+
+        $.ajax({
+            url: `/job-listing/${pk}`,
+            type: 'GET',
+            async: true,
+            data: {
+                pk: pk
+            },
+            success: function(response) {
+
+                try{
+                    let jsonData = JSON.parse(response);
+                    let fields = jsonData[0].fields;
+
+                    console.log(jsonData);
+                    
+                    modal.find('.job-listing-title').html(fields.job_title);
+                    modal.find('.job-listing-company').html(fields.company_name);
+                    modal.find('.job-listing-location').html(fields.location);
+                    modal.find('.job-listing-deadline').html(`Apply by: ${fields.application_deadline}`);
+                    modal.find('.job-listing-description').html(fields.job_description.replaceAll('\n', '<br />'));
+                    
+                    modal.modal('show');
+                }
+                catch(ex){
+                    console.log(ex)
+                }
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error('Error sending POST request:', error);
+            }
+        });
+    }
+
+    function handle_form_error(form, error){
+         //let form = $(form);
+
+         form.find('.form-error').remove();
+
+         Object.entries(error).forEach(([key, value]) => {
+                console.log(key + ': ' + value);
+                let field = form.find(`[name="${key}"]`);
+                let error_message = value.join(', ')
+                field.parent().append(`<p class="form-error" style="color: red;">${error_message}</p>`)
+         });
+
+    }
+
+    $('#apply-open').on('click', function(){
+        let modal = $('#JobApplicationModal');
+        let detailsModal = $('#JobListingDetailsModal').modal('hide');
+        let pk = $(this).data('pk');
+        
+        modal.find('#id_job_listing').val(pk);
+        modal.modal('show');
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,24 @@
+These instructions can also be found in README.md
+
+## Installation
+1. Clone the repository:
+git clone https://github.com/your-username/your-repository.git
+
+2. Navigate to the project directory:
+cd interview_site
+
+4. Install dependencies:
+pip install -r requirements.txt
+
+5. Setup database config:
+copy database_config_sample.json
+rename database_config_sample.json to database_config.json
+modify database_config.json with desired postgresql settings
+
+6. Run migrations:
+python manage.py migrate
+
+7. Start the development server:
+python manage.py runserver
+
+8. Open your web browser and visit `http://127.0.0.1:8000/` to view the application.
