@@ -11,7 +11,6 @@
 #---------------------------------------------------------------
 # IMPORTS
 #---------------------------------------------------------------
-from datetime import datetime
 import json
 from django.forms import model_to_dict
 from django.http import JsonResponse
@@ -121,6 +120,7 @@ def delete_job_listing(request, pk):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+@require_POST
 def create_job_application(request):
     
     if request.method == 'POST':
