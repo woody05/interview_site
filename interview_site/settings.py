@@ -17,6 +17,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -78,8 +80,9 @@ WSGI_APPLICATION = 'interview_site.wsgi.application'
 
 DATABASES = {}
 
+DATABASE_CONFIG = os.path.join(CURRENT_DIR, '../database_config.json')
 # Load JSON data from file
-with open('database_config.json', 'r') as file:
+with open(DATABASE_CONFIG, 'r') as file:
     DATABASES = json.load(file)
 
 
